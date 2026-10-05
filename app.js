@@ -4,25 +4,7 @@ const nav = document.querySelector('#navigation');
 menu.addEventListener('click', () => { const open = menu.getAttribute('aria-expanded') !== 'true'; menu.setAttribute('aria-expanded', String(open)); nav.classList.toggle('open', open); });
 nav.addEventListener('click', event => { if(event.target.closest('a')) { nav.classList.remove('open'); menu.setAttribute('aria-expanded','false'); } });
 document.addEventListener('keydown', event => {if(event.key === 'Escape') {nav.classList.remove('open'); menu.setAttribute('aria-expanded','false');}});
-const amount = document.querySelector('#amount');
-const amounts = [...document.querySelectorAll('[data-amount]')];
-function updateImpact() {
-  if(!amount) return;
-  const value = Number(amount.value);
-  const valid = amount.value !== '' && amount.validity.valid;
-  const label = valid ? value.toLocaleString('en-US') : '—';
-  document.querySelector('#pounds').textContent = valid ? '$'+label : label;
-  document.querySelector('#button-pounds').textContent = valid ? '$'+label : label;
-  amounts.forEach(button => { const selected = valid && Number(button.dataset.amount) === value; button.classList.toggle('selected', selected); button.setAttribute('aria-pressed',String(selected)); });
-}
-amounts.forEach(button => button.addEventListener('click', () => { amount.value = button.dataset.amount; updateImpact(); }));
-amount?.addEventListener('input',updateImpact);
-const dialog = document.querySelector('#donation-dialog');
-document.querySelector('#donation-form')?.addEventListener('submit', event => { event.preventDefault(); if(!amount.reportValidity()) return; const value = Number(amount.value).toLocaleString('en-US'); document.querySelector('#dialog-amount').textContent = '$'+value; dialog.showModal(); });
-document.querySelectorAll('.dialog-close,.dialog-done').forEach(button => button.addEventListener('click', () => dialog.close()));
-dialog?.addEventListener('click',event=>{ if(event.target === dialog) { const box = dialog.getBoundingClientRect(); if(event.clientX < box.left || event.clientX > box.right || event.clientY < box.top || event.clientY > box.bottom) dialog.close(); } });
 document.querySelector('#year').textContent = new Date().getFullYear();
-updateImpact();
 
 // Keep scrolling native. Batch visual updates into one frame per scroll event.
 const motionPreference = window.matchMedia('(prefers-reduced-motion: reduce)');
@@ -115,13 +97,3 @@ if('IntersectionObserver' in window) {
   revealItems.forEach(element=>revealObserver.observe(element));
 }
 
-// Make changing a donation amount feel immediate without altering the target.
-function emphasizeImpact() {
-  if(motionPreference.matches) return;
-  const result=document.querySelector('.impact-result');
-  if(!result || typeof result.animate !== 'function') return;
-  result.getAnimations().forEach(animation=>animation.cancel());
-  result.animate([{transform:'scale(1)'},{transform:'scale(1.025)',backgroundColor:'#dcefbf'},{transform:'scale(1)'}],{duration:360,easing:'ease-out'});
-}
-amounts.forEach(button=>button.addEventListener('click',emphasizeImpact));
-amount?.addEventListener('change',emphasizeImpact);
